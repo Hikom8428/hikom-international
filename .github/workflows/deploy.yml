@@ -1,0 +1,55 @@
+name: Deploy to Hostinger
+
+# Run on every push to main, and allow manually triggering a re-deploy from the
+# Actions tab without needing an empty commit.
+"on":
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# dangerous-clean-slate (below) wipes public_html before re-uploading. If two
+# deploys ran at the same time against the same FTP target, one clean-slate
+# wipe could land mid-upload of the other and corrupt the live site - this
+# queues runs instead of letting them race, and never cancels one partway
+# through an FTP transfer.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: ./dist/
+          server-dir: ./public_html/
+          dangerous-clean-slate: true
+          log-level: standard

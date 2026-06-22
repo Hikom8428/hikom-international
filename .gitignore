@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Environment variables / secrets - never commit these
+.env
+.env.local
+.env.*.local
+
+# Build archives (e.g. manual dist zips) - shouldn't be committed, CI builds fresh
+*.zip
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
