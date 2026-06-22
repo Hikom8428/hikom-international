@@ -94,6 +94,13 @@ const Hero = React.memo(() => {
               <span className="h-px w-10 bg-[#00B4D8] lg:hidden"></span>
             </motion.div>
 
+            {/* TEMPORARY: deployment test marker - remove after verifying auto-deploy */}
+            <motion.div variants={itemVariants} className="mb-4">
+              <span className="inline-block bg-[#00B4D8]/10 border border-[#00B4D8]/30 text-[#00B4D8] text-xs sm:text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-full">
+                Updated via GitHub Actions 🚀
+              </span>
+            </motion.div>
+
             {/* Main Heading */}
             <motion.h1
               variants={itemVariants}
