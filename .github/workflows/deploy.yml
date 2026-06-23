@@ -7,7 +7,7 @@ on:
 
 jobs:
   web-deploy:
-    name: 🎉 Deploy to Hostinger via lFTP
+    name: 🎉 Deploy to Hostinger
     runs-on: ubuntu-latest
     steps:
     - name: 🚚 Get latest code
@@ -19,13 +19,12 @@ jobs:
     - name: 🏗️ Build Project (React/Vite)
       run: npm run build
 
-    - name: 🚀 Install lftp
-      run: sudo apt-get install lftp -y
-
-    - name: 📂 Sync files to Hostinger
-      env:
-        FTP_USER: ${{ secrets.FTP_USERNAME }}
-        FTP_PASS: ${{ secrets.FTP_PASSWORD }}
-        FTP_HOST: ${{ secrets.FTP_SERVER }}
-      run: |
-        lftp -c "set ftp:ssl-allow no; open -u $FTP_USER,'$FTP_PASS' $FTP_HOST; mirror -R -v ./dist/ /public_html/ --parallel=10 --exclude-glob .git* --exclude-glob .DS_Store; quit"
+    - name: 📂 Upload to Hostinger
+      uses: appleboy/ftp-action@master
+      with:
+        host: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        port: ${{ secrets.FTP_PORT }}
+        local_dir: ./dist
+        remote_dir: ./public_html
