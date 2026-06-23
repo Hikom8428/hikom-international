@@ -28,4 +28,4 @@ jobs:
         FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         FTP_HOST: ${{ secrets.FTP_SERVER }}
       run: |
-        lftp -c "set ftp:ssl-allow no; open -u $FTP_USER,'$FTP_PASS' $FTP_HOST; mirror -R -v ./dist/ ./public_html/ --parallel=10 --exclude-glob .git* --exclude-glob .DS_Store; quit"
+        lftp -c "set ftp:ssl-allow no; open -u $FTP_USER,'$FTP_PASS' $FTP_HOST; mirror -R -v ./dist/ /public_html/ --parallel=10 --exclude-glob .git* --exclude-glob .DS_Store; quit"
