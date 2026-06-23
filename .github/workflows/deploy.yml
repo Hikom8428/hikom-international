@@ -27,5 +27,5 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./dist/ 
-        server-dir: /public_html/
+        server-dir: ./ # Yeh is action ko directly wahan files daalne ko kahega jahan FTP connect hota hai
         dangerous-clean-slate: true
