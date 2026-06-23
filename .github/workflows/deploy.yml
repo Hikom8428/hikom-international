@@ -3,11 +3,11 @@ name: Deploy Website
 on:
   push:
     branches:
-      - main # Jab bhi main branch me changes push honge, yeh auto-run hoga
+      - main
 
 jobs:
   web-deploy:
-    name: 🎉 Deploy to Hostinger
+    name: 🎉 Deploy to Hostinger via lFTP
     runs-on: ubuntu-latest
     steps:
     - name: 🚚 Get latest code
@@ -19,11 +19,13 @@ jobs:
     - name: 🏗️ Build Project (React/Vite)
       run: npm run build
 
-    - name: 📂 Sync files to Hostinger FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        port: ${{ secrets.FTP_PORT }}
-        local-dir: ./dist/
+    - name: 🚀 Install lftp
+      run: sudo apt-get install lftp -y
+
+    - name: 📂 Sync files to Hostinger
+      env:
+        FTP_USER: ${{ secrets.FTP_USERNAME }}
+        FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        FTP_HOST: ${{ secrets.FTP_SERVER }}
+      run: |
+        lftp -c "set ftp:ssl-allow no; open -u $FTP_USER,$FTP_PASS $FTP_HOST; mirror -Rneu ./dist/ ./public_html/ --parallel=10 --exclude-glob .git* --exclude-glob .DS_Store; quit"
