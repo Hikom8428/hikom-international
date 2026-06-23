@@ -97,7 +97,7 @@ const Hero = React.memo(() => {
             {/* TEMPORARY: deployment test marker - remove after verifying auto-deploy */}
             <motion.div variants={itemVariants} className="mb-4">
               <span className="inline-block bg-[#00B4D8]/10 border border-[#00B4D8]/30 text-[#00B4D8] text-xs sm:text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-full">
-                Updated via GitHub Actions 🚀
+                Auto-Deploy Pipeline Active ✅
               </span>
             </motion.div>
 
@@ -137,7 +137,7 @@ const Hero = React.memo(() => {
                 href="#quote"
                 className="w-full sm:w-auto bg-transparent text-white border border-gray-400 px-8 py-4 rounded-md font-bold uppercase tracking-wider text-sm hover:border-white hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 text-center"
               >
-                Get a Quote
+                Get a Free Quote
               </a>
             </motion.div>
           </motion.div>
