@@ -26,6 +26,6 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
-        local-dir: ./dist/ # Vite build files yahan banti hain
-        server-dir: ./public_html/ # Hostinger ka main folder (trailing slash jaruri hai)
-        dangerous-clean-slate: true # Yeh purani files delete karke hamesha fresh live karega
+        local-dir: ./dist/ 
+        server-dir: /public_html/
+        dangerous-clean-slate: true
