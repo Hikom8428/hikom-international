@@ -49,6 +49,26 @@ jobs:
           find dist -maxdepth 2
           test -f dist/index.html || (echo "::error::dist/index.html missing - build did not produce expected output" && exit 1)
 
+      # Proves where the FTP account actually lands and whether public_html
+      # already exists at the root - settles the server-dir question with real
+      # data instead of another guess. -s (not -v) so credentials never appear
+      # in the log; GitHub also auto-masks the literal secret values regardless.
+      - name: Debug - inspect FTP directory structure
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: |
+          echo "=== FTP root directory (what you land in on connect) ==="
+          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/" || echo "Could not list root"
+          echo ""
+          echo "=== Is there a public_html folder at this root? ==="
+          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/public_html/" || echo "No public_html/ here - root may already BE the doc root, or it's under domains/<yourdomain>/public_html/"
+          echo ""
+          echo "=== Is there a domains/ folder (modern multi-domain hPanel layout)? ==="
+          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/domains/" || echo "No domains/ folder here"
+
       - name: Deploy to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         timeout-minutes: 10
@@ -73,3 +93,19 @@ jobs:
             **/package.json
             **/package-lock.json
             **/vite.config.js
+
+      # Proves where the files actually ended up after upload, regardless of
+      # whether the action reported success - runs even if it failed.
+      - name: Debug - inspect server-dir after upload
+        if: always()
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: |
+          echo "=== Contents of ./public_html/ after upload ==="
+          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/public_html/" || echo "Could not list public_html/"
+          echo ""
+          echo "=== Checking for an accidental nested public_html/public_html/ ==="
+          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/public_html/public_html/" || echo "No nested public_html/public_html/ (good, or root-level guess was wrong - see above)"
