@@ -1,111 +1,31 @@
-name: Deploy to Hostinger
+name: Deploy Website
 
-# Run on every push to main, and allow manually triggering a re-deploy from the
-# Actions tab without needing an empty commit.
-"on":
+on:
   push:
     branches:
-      - main
-  workflow_dispatch:
-
-# dangerous-clean-slate (below) wipes public_html before re-uploading. If two
-# deploys ran at the same time against the same FTP target, one clean-slate
-# wipe could land mid-upload of the other and corrupt the live site - this
-# queues runs instead of letting them race, and never cancels one partway
-# through an FTP transfer.
-concurrency:
-  group: production-deploy
-  cancel-in-progress: false
-
-permissions:
-  contents: read
+      - main # Jab bhi main branch me changes push honge, yeh auto-run hoga
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy
+  web-deploy:
+    name: 🎉 Deploy to Hostinger
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v3
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+    - name: 📦 Install Dependencies
+      run: npm install
 
-      - name: Install dependencies
-        run: npm install
+    - name: 🏗️ Build Project (React/Vite)
+      run: npm run build
 
-      - name: Build project
-        run: npm run build
-
-      # Sanity check before we ever touch the FTP server: fail loudly here
-      # instead of uploading garbage if the build didn't produce what's expected.
-      - name: Verify build output
-        run: |
-          echo "Contents of dist/:"
-          find dist -maxdepth 2
-          test -f dist/index.html || (echo "::error::dist/index.html missing - build did not produce expected output" && exit 1)
-
-      # Proves where the FTP account actually lands and whether public_html
-      # already exists at the root - settles the server-dir question with real
-      # data instead of another guess. -s (not -v) so credentials never appear
-      # in the log; GitHub also auto-masks the literal secret values regardless.
-      - name: Debug - inspect FTP directory structure
-        env:
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_PORT: ${{ secrets.FTP_PORT }}
-        run: |
-          echo "=== FTP root directory (what you land in on connect) ==="
-          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/" || echo "Could not list root"
-          echo ""
-          echo "=== Is there a public_html folder at this root? ==="
-          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/public_html/" || echo "No public_html/ here - root may already BE the doc root, or it's under domains/<yourdomain>/public_html/"
-          echo ""
-          echo "=== Is there a domains/ folder (modern multi-domain hPanel layout)? ==="
-          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/domains/" || echo "No domains/ folder here"
-
-      - name: Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        timeout-minutes: 10
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: ftp
-          local-dir: ./dist/
-          server-dir: ./public_html/
-          dangerous-clean-slate: true
-          log-level: verbose
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/node_modules
-            **/src/**
-            **/public/**
-            **/.github/**
-            **/package.json
-            **/package-lock.json
-            **/vite.config.js
-
-      # Proves where the files actually ended up after upload, regardless of
-      # whether the action reported success - runs even if it failed.
-      - name: Debug - inspect server-dir after upload
-        if: always()
-        env:
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_PORT: ${{ secrets.FTP_PORT }}
-        run: |
-          echo "=== Contents of ./public_html/ after upload ==="
-          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/public_html/" || echo "Could not list public_html/"
-          echo ""
-          echo "=== Checking for an accidental nested public_html/public_html/ ==="
-          curl -s --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER:$FTP_PORT/public_html/public_html/" || echo "No nested public_html/public_html/ (good, or root-level guess was wrong - see above)"
+    - name: 📂 Sync files to Hostinger FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        port: ${{ secrets.FTP_PORT }}
+        local-dir: ./dist/ # Vite build files yahan banti hain
+        server-dir: ./public_html/ # Hostinger ka main folder (trailing slash jaruri hai)
+        dangerous-clean-slate: true # Yeh purani files delete karke hamesha fresh live karega
