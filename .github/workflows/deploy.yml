@@ -19,12 +19,12 @@ jobs:
     - name: 🏗️ Build Project (React/Vite)
       run: npm run build
 
-    - name: 📂 Upload to Hostinger
-      uses: appleboy/ftp-action@master
+    - name: 📂 Sync files to Hostinger FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        host: ${{ secrets.FTP_SERVER }}
+        server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
-        local_dir: ./dist
-        remote_dir: ./public_html
+        local-dir: ./dist/
+        server-dir: public_html/
