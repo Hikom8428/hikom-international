@@ -19,10 +19,12 @@ jobs:
     - name: 🏗️ Build Project (React/Vite)
       run: npm run build
 
-    # This FTP account's login session already lands inside public_html/ (per
-    # Hostinger's FTP Accounts page and confirmed via FileZilla), so server-dir
-    # must be root here - setting it to "public_html/" was creating a second,
-    # nested public_html/public_html/ folder instead of updating the real one.
+    # FTP root ("/") contains public_html/ as a subfolder (confirmed via
+    # FileZilla) - so server-dir must be "public_html/". Repeated path changes
+    # while debugging left the action's own state-tracking file out of sync
+    # with reality, so this one deploy forces a full clean-slate resync
+    # (delete everything under public_html/ first, then upload dist/ fresh)
+    # to clear out any stale/leftover state once and for all.
     - name: 📂 Sync files to Hostinger FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -31,11 +33,13 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./dist/
-        server-dir: ./
+        server-dir: public_html/
+        dangerous-clean-slate: true
 
     # Separate sync so the SEO admin panel's code stays up to date, without
     # ever touching config.php / seo-data.json (both gitignored, so they never
     # exist in this checkout and this step can't overwrite or delete them).
+    # No clean-slate here - it would wipe any live SEO data already saved.
     - name: 🔐 Sync SEO admin panel to Hostinger FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -44,4 +48,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./seo-admin/
-        server-dir: ./seo-admin/
+        server-dir: public_html/seo-admin/
