@@ -16,14 +16,27 @@ const Hero = React.memo(() => {
   // Don't even start the ThreeScene import() until the hero text has actually
   // entered the viewport - decouples the ~880KB three.js fetch from the initial
   // render commit so the text paints first, regardless of network/CPU speed.
+  // On desktop the hero is already in view on load, so intersection alone
+  // fires immediately - the requestIdleCallback wait on top of it is what
+  // actually pushes the heavy WebGL init off the critical rendering path and
+  // out of the main-thread-blocking window Lighthouse measures.
   useEffect(() => {
     if (isMobile) return;
     const el = textRef.current;
     if (!el) return;
+
+    const scheduleReveal = () => {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(() => setTextVisible(true), { timeout: 2000 });
+      } else {
+        setTimeout(() => setTextVisible(true), 300);
+      }
+    };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTextVisible(true);
+          scheduleReveal();
           observer.disconnect();
         }
       },
