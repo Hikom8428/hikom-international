@@ -19,6 +19,9 @@ jobs:
     - name: 🏗️ Build Project (React/Vite)
       run: npm run build
 
+    # The FTP account's login root contains a "public_html" folder, and the
+    # site's real webroot (confirmed via Hostinger's own File Manager, which
+    # is domain-aware) is one level deeper still: public_html/public_html/.
     - name: 📂 Sync files to Hostinger FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -27,7 +30,7 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./dist/
-        server-dir: public_html/
+        server-dir: public_html/public_html/
 
     # Separate sync so the SEO admin panel's code stays up to date, without
     # ever touching config.php / seo-data.json (both gitignored, so they never
@@ -40,4 +43,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./seo-admin/
-        server-dir: public_html/seo-admin/
+        server-dir: public_html/public_html/seo-admin/
