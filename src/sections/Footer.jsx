@@ -178,7 +178,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-xs font-light">
-            &copy; {currentYear} HIKOM International LLP. All rights reserved.
+            &copy; {currentYear} HIKOM International LLP. All rights reserved. (deploy test)
           </p>
           <div className="flex space-x-6">
             <a href="#" className="text-gray-400 hover:text-white text-xs font-light transition-colors">
