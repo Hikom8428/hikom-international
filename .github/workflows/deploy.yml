@@ -19,12 +19,12 @@ jobs:
     - name: 🏗️ Build Project (React/Vite)
       run: npm run build
 
-    # FTP root ("/") contains public_html/ as a subfolder (confirmed via
-    # FileZilla) - so server-dir must be "public_html/". Repeated path changes
-    # while debugging left the action's own state-tracking file out of sync
-    # with reality, so this one deploy forces a full clean-slate resync
-    # (delete everything under public_html/ first, then upload dist/ fresh)
-    # to clear out any stale/leftover state once and for all.
+    # The real webroot is /domains/hikom.in/public_html/ (confirmed via
+    # FileZilla) - Hostinger's multi-site account layout, not the top-level
+    # /public_html/ we'd been targeting. This FTP account's session already
+    # lands there by default, so server-dir is root ("./"). Clean-slate
+    # clears out the stale deploy-state file that caused the last "./"
+    # attempt to error out trying to delete an already-gone directory.
     - name: 📂 Sync files to Hostinger FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -33,7 +33,7 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./dist/
-        server-dir: public_html/
+        server-dir: ./
         dangerous-clean-slate: true
 
     # Separate sync so the SEO admin panel's code stays up to date, without
@@ -48,4 +48,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./seo-admin/
-        server-dir: public_html/seo-admin/
+        server-dir: ./seo-admin/
