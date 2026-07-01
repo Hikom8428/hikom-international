@@ -1,24 +1,126 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { MeshStandardMaterial, ACESFilmicToneMapping } from "three";
+import React, { useEffect, useMemo, useState } from "react";
+import { Canvas } from "@react-three/fiber";
+import { MeshStandardMaterial, ACESFilmicToneMapping, TextureLoader, CanvasTexture, SRGBColorSpace } from "three";
+import { useScrollProgress } from "../hooks/useScrollProgress";
 
-const AutoRotate = ({ children, speed = 0.25 }) => {
-  const ref = useRef(null);
-  useFrame((_, delta) => {
-    if (ref.current) ref.current.rotation.y += delta * speed;
-  });
-  return <group ref={ref}>{children}</group>;
+// Drawn as a flat forced-perspective texture (same trick as the mobile SVG's
+// trapezoid panels) rather than real rotated 3D planes - those kept coming
+// out unlit/black depending on normal direction, while a textured, unlit
+// (MeshBasicMaterial) quad always shows exactly what's painted, no lighting
+// math involved.
+const useCorridorTexture = () => {
+  return useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 240;
+    canvas.height = 420;
+    const ctx = canvas.getContext("2d");
+
+    // Ceiling trapezoid (white, converging toward the back wall)
+    ctx.fillStyle = "#f1efe9";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(240, 0);
+    ctx.lineTo(186, 60);
+    ctx.lineTo(54, 60);
+    ctx.closePath();
+    ctx.fill();
+
+    // Side walls - warm light beige, like real cleanroom wall panels
+    ctx.fillStyle = "#cdc8bd";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(54, 60);
+    ctx.lineTo(54, 348);
+    ctx.lineTo(0, 420);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(240, 0);
+    ctx.lineTo(186, 60);
+    ctx.lineTo(186, 348);
+    ctx.lineTo(240, 420);
+    ctx.closePath();
+    ctx.fill();
+
+    // Vertical seam lines on the side walls, mimicking modular panel joints
+    ctx.strokeStyle = "#b9b3a7";
+    ctx.lineWidth = 1.5;
+    [16, 36].forEach((x) => {
+      ctx.beginPath();
+      ctx.moveTo(x, 75);
+      ctx.lineTo(x, 335);
+      ctx.stroke();
+    });
+    [204, 224].forEach((x) => {
+      ctx.beginPath();
+      ctx.moveTo(x, 75);
+      ctx.lineTo(x, 335);
+      ctx.stroke();
+    });
+
+    // Floor - light blue-grey, like cleanroom vinyl flooring
+    ctx.fillStyle = "#9fb7bc";
+    ctx.beginPath();
+    ctx.moveTo(0, 420);
+    ctx.lineTo(54, 348);
+    ctx.lineTo(186, 348);
+    ctx.lineTo(240, 420);
+    ctx.closePath();
+    ctx.fill();
+
+    // Back wall, glimpsed at the far end of the corridor
+    ctx.fillStyle = "#bdb7ac";
+    ctx.fillRect(54, 60, 132, 288);
+
+    // Recessed ceiling light panels
+    [80, 130].forEach((x) => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(x, 40, 30, 14);
+      ctx.strokeStyle = "#cfcac0";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, 40, 30, 14);
+    });
+
+    const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    return texture;
+  }, []);
 };
 
-const FloatBob = ({ children, speed = 1.5, intensity = 0.15 }) => {
-  const ref = useRef(null);
-  useFrame(({ clock }) => {
-    if (ref.current) ref.current.position.y = Math.sin(clock.elapsedTime * speed) * intensity;
-  });
-  return <group ref={ref}>{children}</group>;
+// Drop the product logo file in public/product-logo/Logo.png - it's picked up
+// here by a fixed path, so replacing that file (same exact name) is all a
+// future update needs. Filenames are case-sensitive on the live server.
+const PRODUCT_LOGO_SRC = "/product-logo/Logo.png";
+
+// Loads the logo as a texture instead of a DOM overlay - a plane in the scene
+// rotates/lights with the door leaf for free, and a manual loader (vs.
+// drei's suspense-based useTexture) lets a missing file fail silently rather
+// than crashing the scene before the user has dropped a logo in.
+const useOptionalTexture = (src) => {
+  const [texture, setTexture] = useState(null);
+  useEffect(() => {
+    let active = true;
+    new TextureLoader().load(
+      src,
+      (loaded) => active && setTexture(loaded),
+      undefined,
+      () => active && setTexture(null)
+    );
+    return () => {
+      active = false;
+    };
+  }, [src]);
+  return texture;
 };
 
-const ModularOTDoor = React.memo(() => {
+// Each leaf swings open about a hinge on its outer edge, like a real double door.
+const LEAF_WIDTH = 1.2;
+const HINGE_X = 1.22;
+const MAX_OPEN_ANGLE = (78 * Math.PI) / 180;
+
+const DoubleLeafDoor = React.memo(({ progress = 0 }) => {
+  const logoTexture = useOptionalTexture(PRODUCT_LOGO_SRC);
+  const corridorTexture = useCorridorTexture();
   const materials = useMemo(
     () => ({
       frame: new MeshStandardMaterial({
@@ -36,10 +138,6 @@ const ModularOTDoor = React.memo(() => {
         metalness: 0.9,
         roughness: 0.15,
       }),
-      // Plain transparent standard material instead of MeshPhysicalMaterial's
-      // transmission - transmission is one of the most expensive three.js material
-      // features (a near-field render pass per object) and relies on an Environment
-      // map for its reflections, which has been removed for performance.
       glass: new MeshStandardMaterial({
         color: "#0F2942",
         metalness: 0.3,
@@ -52,83 +150,76 @@ const ModularOTDoor = React.memo(() => {
         metalness: 1.0,
         roughness: 0.1,
       }),
-      ledAccent: new MeshStandardMaterial({
-        color: "#00B4D8",
-        emissive: "#00B4D8",
-        emissiveIntensity: 4,
-        toneMapped: false,
-      }),
     }),
     []
   );
 
+  // Pivot group sits at the hinge (the leaf's outer edge, against the frame)
+  // and rotates about Y - the leaf body is nested inside, offset back to its
+  // hinge so it swings open like a real door instead of sliding sideways.
+  // Sign is flipped vs. what you'd guess: this rotates the leaf's free edge
+  // toward +z (out toward the camera/viewer) rather than back into the frame.
+  const renderLeaf = (sign) => (
+    <group position={[sign * HINGE_X, 0, 0.05]} rotation={[0, sign < 0 ? -progress * MAX_OPEN_ANGLE : progress * MAX_OPEN_ANGLE, 0]}>
+      <group position={[-sign * (LEAF_WIDTH / 2), 0, 0]}>
+        {/* Leaf Panel */}
+        <mesh material={materials.panel}>
+          <boxGeometry args={[LEAF_WIDTH, 4.2, 0.15]} />
+        </mesh>
+
+        {/* Kickplate */}
+        <mesh position={[0, -1.7, 0.08]} material={materials.kickplate}>
+          <boxGeometry args={[LEAF_WIDTH, 0.8, 0.02]} />
+        </mesh>
+
+        {/* Vision Window */}
+        <mesh position={[0, 0.8, 0.08]} material={materials.glass}>
+          <boxGeometry args={[0.6, 1.1, 0.02]} />
+        </mesh>
+        <mesh position={[0, 0.8, 0.09]} material={materials.frame}>
+          <boxGeometry args={[0.68, 1.18, 0.01]} />
+        </mesh>
+        <mesh position={[0, 0.8, 0.095]} material={materials.glass}>
+          <boxGeometry args={[0.58, 1.08, 0.02]} />
+        </mesh>
+
+        {/* Handle near the inner meeting edge */}
+        <mesh position={[sign * -0.48, 0, 0.1]} material={materials.handle}>
+          <boxGeometry args={[0.05, 1.0, 0.05]} />
+        </mesh>
+
+        {/* Product logo plate, top-left of the left leaf - swings open with the door */}
+        {sign < 0 && logoTexture && (
+          <mesh position={[-0.22, 1.85, 0.12]}>
+            <planeGeometry args={[0.7, 0.32]} />
+            <meshBasicMaterial map={logoTexture} transparent toneMapped={false} />
+          </mesh>
+        )}
+      </group>
+    </group>
+  );
+
   return (
     <group dispose={null}>
-      {/* Outer Door Frame */}
-      <mesh position={[0, 0, 0]} material={materials.frame}>
-        <boxGeometry args={[2.8, 4.6, 0.2]} />
+      {/* Static outer frame */}
+      <mesh position={[0, 0, -0.05]} material={materials.frame}>
+        <boxGeometry args={[2.8, 4.6, 0.1]} />
       </mesh>
 
-      {/* Main Door Panel */}
-      <mesh position={[0, 0, 0.05]} material={materials.panel}>
-        <boxGeometry args={[2.4, 4.2, 0.15]} />
+      {/* Recessed cleanroom corridor glimpsed through the doorway as the
+          leaves swing open - a forced-perspective texture instead of a flat
+          painted backdrop, so it reads as depth rather than a black void. */}
+      <mesh position={[0, 0, 0]}>
+        <planeGeometry args={[2.4, 4.2]} />
+        <meshBasicMaterial map={corridorTexture} toneMapped={false} />
       </mesh>
 
-      {/* Bottom Metal Kickplate */}
-      <mesh position={[0, -1.7, 0.13]} material={materials.kickplate}>
-        <boxGeometry args={[2.4, 0.8, 0.02]} />
-      </mesh>
-
-      {/* Vision Window Panel */}
-      <mesh position={[0, 0.8, 0.13]} material={materials.glass}>
-        <boxGeometry args={[1.3, 1.3, 0.02]} />
-      </mesh>
-
-      {/* Window Bezel/Frame */}
-      <mesh position={[0, 0.8, 0.14]} material={materials.frame}>
-        <boxGeometry args={[1.4, 1.4, 0.01]} />
-      </mesh>
-
-      {/* Inner Glass Detail */}
-      <mesh position={[0, 0.8, 0.145]} material={materials.glass}>
-        <boxGeometry args={[1.25, 1.25, 0.02]} />
-      </mesh>
-
-      {/* Premium D-Handle (Right Side) - box instead of a 32-segment cylinder, far fewer vertices to transform/rasterize each frame for a detail this small */}
-      <group position={[0.9, 0, 0.15]}>
-        <mesh position={[0, 0, 0.1]} material={materials.handle}>
-          <boxGeometry args={[0.07, 1.2, 0.07]} />
-        </mesh>
-        <mesh position={[0, 0.55, 0.05]} material={materials.handle}>
-          <boxGeometry args={[0.035, 0.035, 0.1]} />
-        </mesh>
-        <mesh position={[0, -0.55, 0.05]} material={materials.handle}>
-          <boxGeometry args={[0.035, 0.035, 0.1]} />
-        </mesh>
-      </group>
-
-      {/* Emissive LED Strip Indicator (Left Side) */}
-      <mesh position={[-0.9, 0, 0.13]} material={materials.ledAccent}>
-        <boxGeometry args={[0.04, 2.2, 0.02]} />
-      </mesh>
+      {renderLeaf(-1)}
+      {renderLeaf(1)}
     </group>
   );
 });
-ModularOTDoor.displayName = "ModularOTDoor";
-
-// frameloop="demand" only re-renders when invalidate() is called, so the continuous
-// AutoRotate/FloatBob animations above would otherwise freeze. This calls
-// invalidate() on a capped interval instead of every display refresh, keeping the
-// motion looking the same while cutting render cycles substantially versus the
-// default uncapped "always" loop (e.g. 60-120Hz on most screens).
-const FrameLimiter = ({ fps = 30 }) => {
-  const { invalidate } = useThree();
-  useEffect(() => {
-    const id = setInterval(invalidate, 1000 / fps);
-    return () => clearInterval(id);
-  }, [invalidate, fps]);
-  return null;
-};
+DoubleLeafDoor.displayName = "DoubleLeafDoor";
 
 // ThreeScene only ever mounts at >=1024px (Hero.jsx gates it), but a narrow
 // laptop/tablet window in that range can still have a weak GPU - antialiasing is
@@ -136,8 +227,13 @@ const FrameLimiter = ({ fps = 30 }) => {
 const isNarrowViewport = () => typeof window !== "undefined" && window.innerWidth < 1280;
 
 const ThreeScene = () => {
+  // The door itself is static - only the scroll-driven hinge angle changes,
+  // so frameloop="demand" re-renders just on that prop update with no
+  // per-frame render loop needed.
+  const progress = useScrollProgress();
+
   return (
-    <div className="w-full h-full min-h-[500px] lg:min-h-[700px] cursor-grab active:cursor-grabbing">
+    <div className="w-full h-full min-h-[500px] lg:min-h-[700px]">
       <Canvas
         dpr={1}
         frameloop="demand"
@@ -149,23 +245,14 @@ const ThreeScene = () => {
           powerPreference: "high-performance",
         }}
       >
-        <FrameLimiter fps={30} />
-
         {/* Ambient & Directional Lighting */}
         <ambientLight intensity={0.5} color="#ffffff" />
         <directionalLight position={[5, 10, 7]} intensity={1.5} color="#ffffff" />
 
-        {/* Single cyan accent light - the second (navy) spotlight was removed: one
-            fewer per-pixel lighting pass, and its contribution was barely visible
-            against the already-navy page background. */}
+        {/* Single cyan accent light */}
         <spotLight position={[-8, 5, 8]} angle={0.5} penumbra={1} intensity={40} color="#00B4D8" distance={25} />
 
-        {/* Smooth Floating Animation Wrapper */}
-        <AutoRotate speed={0.25}>
-          <FloatBob speed={1.5} intensity={0.15}>
-            <ModularOTDoor />
-          </FloatBob>
-        </AutoRotate>
+        <DoubleLeafDoor progress={progress} />
       </Canvas>
     </div>
   );

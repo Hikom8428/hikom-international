@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useSeo } from "../hooks/useSeo";
+
+// Photo file can be dropped in as any of these formats - on a load error we
+// just try the next extension instead of requiring a fixed type, so
+// jpg/jpeg/png/webp/svg all work without further code changes.
+const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "svg"];
 
 // TODO: replace with the real name, designation, bio and LinkedIn URL.
-// TODO: drop the actual photo at public/md-photo.jpg (or update the path below).
+// TODO: drop the actual photo at public/md-photo.* (any extension above).
 const md = {
   name: "Shrey Bafna",
   designation: "Managing Director",
-  photo: "/md-photo.jpg",
   bio: "With over a decade of experience in industrial infrastructure and contamination-control engineering, our Managing Director has been the driving force behind HIKOM International's commitment to precision, hygiene, and uncompromising quality. Under this leadership, HIKOM has grown into a trusted partner for hospitals, pharmaceutical manufacturers, and critical-care facilities across the country.",
-  linkedin: "#",
+  linkedin: "https://www.linkedin.com/in/shrey-bafna-044728118/",
 };
 
 const fadeUp = {
@@ -18,6 +23,13 @@ const fadeUp = {
 
 const Management = () => {
   const [photoError, setPhotoError] = useState(false);
+  const [photoExtIndex, setPhotoExtIndex] = useState(0);
+  const mdPhoto = `/md-photo.${IMAGE_EXTENSIONS[photoExtIndex]}`;
+
+  useSeo("management", {
+    title: "Management | HIKOM International LLP",
+    description: `Meet ${md.name}, ${md.designation} at HIKOM International LLP, leading the company's commitment to precision, hygiene, and uncompromising quality in industrial infrastructure.`,
+  });
 
   return (
     <main className="bg-[#0F2942]">
@@ -123,13 +135,20 @@ const Management = () => {
                   </div>
                 ) : (
                   <img
-                    src={md.photo}
+                    src={mdPhoto}
                     alt={md.name}
                     width="800"
                     height="800"
                     loading="lazy"
                     decoding="async"
-                    onError={() => setPhotoError(true)}
+                    onError={() => {
+                      const nextExt = photoExtIndex + 1;
+                      if (nextExt < IMAGE_EXTENSIONS.length) {
+                        setPhotoExtIndex(nextExt);
+                      } else {
+                        setPhotoError(true);
+                      }
+                    }}
                     className="w-full h-full object-cover"
                   />
                 )}

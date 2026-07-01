@@ -30,14 +30,6 @@ section {
   0%, 100% { opacity: 0.05; }
   50% { opacity: 0.1; }
 }
-@keyframes float-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -69,9 +61,6 @@ section {
 }
 .animate-opacity-pulse {
   animation: opacity-pulse 5s ease-in-out infinite;
-}
-.animate-float-bob {
-  animation: fade-in 0.8s ease forwards, float-bob 4s ease-in-out infinite;
 }
 .animate-marquee {
   animation: marquee-scroll 25s linear infinite;

@@ -94,13 +94,6 @@ const Hero = React.memo(() => {
               <span className="h-px w-10 bg-[#00B4D8] lg:hidden"></span>
             </motion.div>
 
-            {/* TEMPORARY: deployment test marker - remove after verifying auto-deploy */}
-            <motion.div variants={itemVariants} className="mb-4">
-              <span className="inline-block bg-[#00B4D8]/10 border border-[#00B4D8]/30 text-[#00B4D8] text-xs sm:text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-full">
-                Auto-Deploy Pipeline Active ✅
-              </span>
-            </motion.div>
-
             {/* Main Heading */}
             <motion.h1
               variants={itemVariants}
@@ -108,7 +101,7 @@ const Hero = React.memo(() => {
             >
               Leading the Future of <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B4D8] to-blue-200">
-                Cleanroom Manufacturing!
+                Healthcare Engineering
               </span>
             </motion.h1>
 
@@ -117,9 +110,9 @@ const Hero = React.memo(() => {
               variants={itemVariants}
               className="text-gray-300 text-base sm:text-lg md:text-xl font-light leading-relaxed mb-10 max-w-2xl mx-auto lg:mx-0"
             >
-              Engineered for precision, hygiene, and performance. We deliver advanced 
-              contamination-free modular solutions for modern hospitals, pharma industries, 
-              and critical care environments.
+              Engineered for precision, safety, and performance. HIKOM delivers OT Doors,
+              Cleanroom Solutions, Fire-Rated Doors, and specialized healthcare infrastructure
+              trusted by modern hospitals and critical care facilities.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -134,10 +127,13 @@ const Hero = React.memo(() => {
                 Explore Our Products
               </a>
               <a
-                href="#quote"
+                href="/brochures/company-brochure.pdf"
+                download
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full sm:w-auto bg-transparent text-white border border-gray-400 px-8 py-4 rounded-md font-bold uppercase tracking-wider text-sm hover:border-white hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 text-center"
               >
-                Get a Free Quote
+                Download Brochure
               </a>
             </motion.div>
           </motion.div>
@@ -147,12 +143,12 @@ const Hero = React.memo(() => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-[400px] sm:h-[500px] lg:h-[700px] relative flex items-center justify-center"
+            className="w-full h-[400px] sm:h-[500px] lg:h-[700px] relative flex items-center justify-center translate-y-6 sm:translate-y-10 lg:translate-y-16"
           >
             {/* Subtle glow behind the 3D model */}
             <div className="absolute inset-0 bg-gradient-to-tr from-[#00B4D8]/10 to-transparent rounded-full blur-[100px] pointer-events-none" />
             
-            <div className="w-full h-full relative z-10 cursor-grab active:cursor-grabbing">
+            <div className="w-full h-full relative z-10">
               {isMobile ? (
                 <DoorIllustration />
               ) : textVisible ? (

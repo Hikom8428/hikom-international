@@ -15,19 +15,19 @@ const Projects = React.memo(() => {
       title: "Pharma Cleanroom Installation",
       category: "Pharmaceutical Setup",
       description: "ISO Class 5 cleanroom facility featuring specialized insulated panels, seamless flooring, and automated hermetic sliding doors.",
-      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1200",
+      image: "https://i.postimg.cc/rwZ7BSqy/Pharma-cleanroom-installation.webp?auto=format&fit=crop&q=80&w=1200",
     },
     {
       title: "Radiation Shielding Room",
       category: "Specialized Containment",
       description: "Custom lead-lined doors and shielding partitions engineered for advanced oncology and diagnostic imaging centers.",
-      image: "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=1200",
+      image: "https://i.postimg.cc/KzGLtggr/radiation-sheilding-room.jpg?auto=format&fit=crop&q=80&w=1200",
     },
     {
       title: "Research Laboratory Setup",
       category: "Biotech & Research",
       description: "End-to-end BSL-3 laboratory implementation with custom hermetic sealing, integrated airlocks, and premium hygienic paneling.",
-      image: "https://images.unsplash.com/photo-1574169208507-84376144848b?auto=format&fit=crop&q=80&w=1200",
+      image: "https://i.postimg.cc/JhbcNLYk/research-laborarory-setup.png?auto=format&fit=crop&q=80&w=1200",
     },
   ];
 

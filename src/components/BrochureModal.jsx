@@ -100,7 +100,7 @@ const BrochureModal = ({ item, onClose }) => {
 
             {!unlocked ? (
               <>
-                <h3 className="text-2xl font-bold text-[#0F2942] mb-1">Download Brochure</h3>
+                <h3 className="text-2xl font-bold text-[#0F2942] mb-1">Get a Quote</h3>
                 <p className="text-gray-500 text-sm mb-6">
                   {item.category} &middot; {item.name}
                 </p>

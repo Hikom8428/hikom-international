@@ -32,28 +32,29 @@ const Navbar = () => {
       href: "/#about",
       dropdown: [
         { name: "Management", href: "/management" },
-        { name: "Clientele", href: "/#clients" },
-        { name: "Projects", href: "/#projects" },
-        { name: "Media", href: "/media" },
-        { name: "Quality", href: "/#certifications" },
         { name: "Industries", href: "/#industries" },
+        { name: "Projects", href: "/#projects" },
+        { name: "Quality", href: "/#certifications" },
+        { name: "Clientele", href: "/#clients" },
+        { name: "Media", href: "/media" },
       ],
     },
     {
-      name: "Clean Room",
+      name: "Clean Room And Pharma Industries",
       href: "/#cleanroom",
       dropdown: categoryDropdown(productCategories[0]),
     },
     {
-      name: "Medical Pharma Structure",
+      name: "Medical Infrastructure",
       href: "/#medical-pharma",
       dropdown: categoryDropdown(productCategories[1]),
     },
     {
-      name: "Doors",
+      name: "Industrial Doors",
       href: "/#doors",
       dropdown: categoryDropdown(productCategories[2]),
     },
+    { name: "Gallery", href: "/gallery" },
     { name: "Contact", href: "/#contact" },
   ];
 
@@ -131,7 +132,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 15 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-60 bg-white border border-gray-100 shadow-2xl rounded-xl p-3"
+                        className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-72 bg-white border border-gray-100 shadow-2xl rounded-xl p-3"
                       >
                         {/* Invisible bridge to keep hover active */}
                         <div className="absolute -top-6 left-0 w-full h-6 bg-transparent" />
@@ -147,9 +148,9 @@ const Navbar = () => {
                               key={idx}
                               {...linkProps}
                               onClick={() => setActiveDropdown(null)}
-                              className="flex items-center text-[#0F2942] hover:text-[#00B4D8] hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
+                              className="flex items-start text-[#0F2942] hover:text-[#00B4D8] hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
                             >
-                              <svg className="w-4 h-4 mr-2 text-[#00B4D8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                              <svg className="w-4 h-4 mr-2 mt-0.5 text-[#00B4D8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                               </svg>
                               {label}
@@ -162,14 +163,6 @@ const Navbar = () => {
                 )}
               </div>
             ))}
-            
-            {/* Call to Action Button */}
-            <Link
-              to="/#contact"
-              className="bg-[#0F2942] text-white px-5 py-2.5 rounded-md text-sm font-bold uppercase tracking-wide whitespace-nowrap hover:bg-[#00B4D8] transition-colors shadow-md outline-none focus-visible:ring-2 focus-visible:ring-[#00B4D8] focus-visible:ring-offset-2"
-            >
-              Get a Quote
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -265,16 +258,6 @@ const Navbar = () => {
                   )}
                 </div>
               ))}
-              
-              <div className="pt-4 px-3">
-                <Link
-                  to="/#contact"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full text-center bg-[#0F2942] text-white px-5 py-3 rounded-md text-sm font-bold uppercase tracking-wide hover:bg-[#00B4D8] transition-colors"
-                >
-                  Get a Quote
-                </Link>
-              </div>
             </div>
           </motion.div>
         )}

@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 // needs to be in the main bundle, the rest can wait until that route is visited.
 const Management = lazy(() => import("./pages/Management"));
 const Media = lazy(() => import("./pages/Media"));
+const Gallery = lazy(() => import("./pages/Gallery"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 
 // Matches each lazy page's own bg-[#0F2942] so there's no white flash while it loads.
@@ -28,6 +29,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/management" element={<Management />} />
             <Route path="/media" element={<Media />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/:categorySlug/:itemSlug" element={<ProductDetail />} />
           </Routes>
         </Suspense>

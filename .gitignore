@@ -20,6 +20,10 @@ dist-ssr
 # Build archives (e.g. manual dist zips) - shouldn't be committed, CI builds fresh
 *.zip
 
+# SEO admin panel - generated on the live server, never committed
+seo-admin/config.php
+seo-admin/seo-data.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

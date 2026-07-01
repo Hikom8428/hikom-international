@@ -30,7 +30,7 @@ const Industries = React.memo(() => {
     {
       title: "Food Processing",
       description: "Hygienic paneling and specialized doors engineered to meet strict food safety, sanitation, and temperature control standards.",
-      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=800",
+      image: "https://i.postimg.cc/CLg07HKY/food-processing.webp",
     },
     {
       title: "Medical Device Mfg.",
