@@ -22,9 +22,9 @@ jobs:
     # The real webroot is /domains/hikom.in/public_html/ (confirmed via
     # FileZilla) - Hostinger's multi-site account layout, not the top-level
     # /public_html/ we'd been targeting. This FTP account's session already
-    # lands there by default, so server-dir is root ("./"). Clean-slate
-    # clears out the stale deploy-state file that caused the last "./"
-    # attempt to error out trying to delete an already-gone directory.
+    # lands there by default, so server-dir is root ("./"). No clean-slate -
+    # it timed out deleting the accumulated clutter from earlier misfires;
+    # that clutter is being removed manually instead, then a normal diff sync.
     - name: 📂 Sync files to Hostinger FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -34,7 +34,6 @@ jobs:
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./dist/
         server-dir: ./
-        dangerous-clean-slate: true
 
     # Separate sync so the SEO admin panel's code stays up to date, without
     # ever touching config.php / seo-data.json (both gitignored, so they never
