@@ -13,6 +13,8 @@ const Management = lazy(() => import("./pages/Management"));
 const Media = lazy(() => import("./pages/Media"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 
 // Matches each lazy page's own bg-[#0F2942] so there's no white flash while it loads.
 const PageFallback = () => <div className="min-h-screen bg-[#0F2942]" />;
@@ -30,6 +32,8 @@ function App() {
             <Route path="/management" element={<Management />} />
             <Route path="/media" element={<Media />} />
             <Route path="/gallery" element={<Gallery />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/:categorySlug/:itemSlug" element={<ProductDetail />} />
           </Routes>
         </Suspense>

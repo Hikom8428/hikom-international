@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -181,12 +182,12 @@ const Footer = () => {
             &copy; {currentYear} HIKOM International LLP. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <a href="#" className="text-gray-400 hover:text-white text-xs font-light transition-colors">
+            <Link to="/privacy-policy" className="text-gray-400 hover:text-white text-xs font-light transition-colors">
               Privacy Policy
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white text-xs font-light transition-colors">
+            </Link>
+            <Link to="/terms-of-service" className="text-gray-400 hover:text-white text-xs font-light transition-colors">
               Terms of Service
-            </a>
+            </Link>
             <a href="/sitemap.xml" className="text-gray-400 hover:text-white text-xs font-light transition-colors">
               Sitemap
             </a>
